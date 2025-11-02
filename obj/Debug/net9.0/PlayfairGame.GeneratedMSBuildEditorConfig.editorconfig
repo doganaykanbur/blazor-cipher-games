@@ -1,0 +1,73 @@
+is_global = true
+build_property.EnableAotAnalyzer = 
+build_property.EnableSingleFileAnalyzer = 
+build_property.EnableTrimAnalyzer = false
+build_property.IncludeAllContentForSelfExtract = 
+build_property.TargetFramework = net9.0
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = false
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = browser
+build_property.RootNamespace = PlayfairGame
+build_property.RootNamespace = PlayfairGame
+build_property.ProjectDir = C:\Users\revean\Desktop\CipherProject\PlayfairGame\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = false
+build_property.RazorLangVersion = 9.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\revean\Desktop\CipherProject\PlayfairGame
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 9.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/App.razor]
+build_metadata.AdditionalFiles.TargetPath = QXBwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/Pages/CaesarGame.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcQ2Flc2FyR2FtZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/Pages/HillGame.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcSGlsbEdhbWUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/Pages/PlayFairGame.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUGxheUZhaXJHYW1lLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/Pages/TranspositionGame.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVHJhbnNwb3NpdGlvbkdhbWUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/Pages/VigenereGame.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmlnZW5lcmVHYW1lLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/Shared/DifficultySwitch.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXERpZmZpY3VsdHlTd2l0Y2gucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/Shared/LangSwitch.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXExhbmdTd2l0Y2gucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/Shared/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/Shared/NavMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = U2hhcmVkXE5hdk1lbnUucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = X0ltcG9ydHMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/revean/Desktop/CipherProject/PlayfairGame/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = TGF5b3V0XE1haW5MYXlvdXQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = b-5a2zzp2fyf

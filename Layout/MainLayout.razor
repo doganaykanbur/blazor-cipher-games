@@ -1,0 +1,18 @@
+@using PlayfairGame
+@using PlayfairGame.Shared
+@inherits LayoutComponentBase
+<div class="page">
+    <header class="brand">
+        <div class="brand-title">Kripto Oyunlari</div>
+    </header>
+    <LangSwitch />
+    <DifficultySwitch />
+    <main>
+        <article class="content">
+            @Body
+        </article>
+    </main>
+    
+</div>
+
+

@@ -1,0 +1,331 @@
+@page "/caesar"
+@using System.Text
+@inject IJSRuntime JSRuntime
+@inject LanguageService L
+@inject SettingsService Settings
+@implements IDisposable
+
+<div class="game-wrapper">    <div class="game-nav">
+        <a class="game-btn" href="/">@L["menu_playfair"]</a>
+        <a class="game-btn active" href="/caesar">@L["menu_caesar"]</a>
+        <a class="game-btn" href="/hill">@L["menu_hill"]</a>
+        <a class="game-btn" href="/vigenere">@L["menu_vigenere"]</a>
+        <a class="game-btn" href="/transposition">@L["menu_transposition"]</a>
+    </div>
+
+    @if (!HasStarted)
+    {
+        <div class="start-screen">
+            <img src="images/caesar.svg" alt="Caesar" class="game-logo" />
+            <h1 class="game-title">@L["caesar_title"]</h1>
+            <div class="tagline">@L["caesar_tagline"]</div>
+            <p class="intro-text">@L["caesar_intro"]</p>
+            <button class="start-button" @onclick="StartGame">@L["start"]</button>
+            <div class="start-cta">@L["caesar_start_cta"]</div>
+        </div>
+    }
+    else
+    {
+        <div class="game-container">
+            
+
+            <div class="alphabet-grid">
+                @foreach (var ch in Alphabet)
+                {
+                    <div class="cell">@ch</div>
+                }
+            </div>
+
+            <div class="question-box">@QuestionText</div>
+
+            <div class="answer-container">
+                <input class="answer-input" placeholder="@L["caesar_placeholder"]" @bind="UserAnswer" />
+                @if (CharacterValidation.Count > 0)
+                {
+                    <div class="character-validation">
+                        @for (int i = 0; i < CharacterValidation.Count; i++)
+                        {
+                            <span class="char @(CharacterValidation[i] ? "correct-char" : "wrong-char")">
+                                @(i < UserAnswer.Length ? UserAnswer[i].ToString().ToUpper() : "")
+                            </span>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="button-group">
+                <button class="action-button" @onclick="CheckAnswer">@L["check"]</button>
+                <button class="action-button" @onclick="ShowAnswer">@L["show_answer"]</button>
+            </div>
+
+            @if (ResultMessage is not null && !ShowModal)
+            {
+                <div class="@($"result {(IsCorrect ? "correct" : "wrong")}")">@ResultMessage</div>
+            }
+
+            @if (ShowModal)
+            {
+                <div class="modal-overlay" @onclick="CloseModal">
+                    <div class="modal-content" @onclick:stopPropagation="true">
+                        <div class="modal-header">
+                            <h2 class="modal-title">@L["result_title"]</h2>
+                            <button class="modal-close" @onclick="CloseModal">&times;</button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="performance-info">
+                                <div class="performance-text" style="color: @GetPerformanceColor()">
+                                    @ModalPerformanceText
+                                </div>
+                                <div class="performance-details">
+                                    <div class="detail-item">
+                                        <span class="detail-label">@L["error_count"]</span>
+                                        <span class="detail-value">@ErrorCount</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">@L["total_attempts"]</span>
+                                        <span class="detail-value">@TotalAttempts</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (ShowPercentage)
+                            {
+                                <div class="percentage-display">
+                                    <div class="percentage-label" id="percentageText" style="color: @GetPerformanceColor()">0%</div>
+                                </div>
+                            }
+
+                            @if (ShowAnswerInModal)
+                            {
+                                <div class="correct-answer-box">@L["correct_answer"] @CorrectAnswer / @AltAnswer</div>
+                            }
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="modal-button" @onclick="NextQuestionFromModal">@L["continue"]</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool HasStarted = false;
+    private const string Arrow = "\u2192";
+    private CaesarCipher? cipher;
+    private int Shift = 3;
+    private string BaseText = string.Empty;
+    private string EncodedText = string.Empty;
+    private string QuestionText = string.Empty;
+    private string UserAnswer = string.Empty;
+    private string CorrectAnswer = string.Empty;
+    private string AltAnswer = string.Empty;
+    private string? ResultMessage;
+    private bool IsCorrect;
+    private bool AskForward; // true: PLAIN -> CIPHER (answer +S), false: CIPHER -> PLAIN (answer -S)
+    private List<char> Alphabet = Enumerable.Range('A', 26).Select(i => (char)i).ToList();
+    private List<bool> CharacterValidation = new();
+    private int CorrectPercentage = 0;
+    private bool ShowPercentage = false;
+    private int ErrorCount = 0;
+    private bool ShowModal = false;
+    private int TotalAttempts = 0;
+
+    // Modal
+    // Title is provided from language service in markup
+    private string ModalPerformanceText = string.Empty;
+    private bool ShowAnswerInModal = false;
+
+    private void StartGame()
+    {
+        HasStarted = true;
+        NextQuestion();
+    }
+
+    private void NextQuestion()
+    {
+        ResultMessage = null;
+        UserAnswer = string.Empty;
+        CharacterValidation.Clear();
+        ShowPercentage = false;
+        CorrectPercentage = 0;
+        ShowModal = false;
+        ShowAnswerInModal = false;
+
+        Shift = Random.Shared.Next(1, 26);
+        cipher = new CaesarCipher(Shift);
+
+        BaseText = GetRandomPhrase();
+        EncodedText = cipher.Encode(BaseText);
+
+        AskForward = Random.Shared.Next(2) == 0;
+        if (AskForward)
+        {
+            QuestionText = $"{L["find_shift"]}: {BaseText} {Arrow} {EncodedText}";
+            CorrectAnswer = $"+{Shift}";
+            var alt = (26 - Shift) % 26;
+            AltAnswer = alt == 0 ? "+0" : $"-{alt}";
+        }
+        else
+        {
+            QuestionText = $"{L["find_shift"]}: {EncodedText} {Arrow} {BaseText}";
+            CorrectAnswer = $"-{Shift}";
+            var alt = (26 - Shift) % 26;
+            AltAnswer = alt == 0 ? "+0" : $"+{alt}";
+        }
+    }
+
+    private void CheckAnswer()
+    {
+        CharacterValidation.Clear();
+        TotalAttempts++;
+
+        var user = UserAnswer.Trim().Replace(" ", "");
+
+        // Accept modularly equivalent shifts (e.g., +10 == -16 mod 26)
+        bool parsed = TryParseShift(user, out int userVal);
+        int expectedResidue = AskForward ? Mod26(Shift) : Mod26(-Shift);
+        int userResidue = Mod26(userVal);
+
+        IsCorrect = parsed && userResidue == expectedResidue;
+
+        // Simple character visualization
+        CharacterValidation.Clear();
+        if (parsed)
+        {
+            var display = user.StartsWith("+") || user.StartsWith("-") ? user : (userVal >= 0 ? "+" + user : user);
+            for (int i = 0; i < display.Length; i++) CharacterValidation.Add(IsCorrect);
+            CorrectPercentage = IsCorrect ? 100 : 0;
+        }
+        else
+        {
+            for (int i = 0; i < user.Length; i++) CharacterValidation.Add(false);
+            CorrectPercentage = 0;
+        }
+
+        if (IsCorrect)
+        {
+            ShowAnswerInModal = false;
+            ShowModal = true;
+            ShowPercentage = true;
+            SetModalPerformance();
+            StateHasChanged();
+            JSRuntime.InvokeVoidAsync("animatePercentage", CorrectPercentage);
+        }
+        else
+        {
+            ErrorCount++;
+            ResultMessage = L["wrong_try_again"];
+        }
+    }
+
+    private void ShowAnswer()
+    {
+        ShowModal = true;
+        ShowPercentage = true;
+        ShowAnswerInModal = true;
+        CorrectPercentage = 0;
+        ModalPerformanceText = L["didnt_guess"];
+        StateHasChanged();
+        JSRuntime.InvokeVoidAsync("animatePercentage", CorrectPercentage);
+    }
+
+    private void NextQuestionFromModal()
+    {
+        NextQuestion();
+    }
+
+    private void CloseModal()
+    {
+        ShowModal = false;
+        ShowPercentage = false;
+        ShowAnswerInModal = false;
+    }
+
+    private void SetModalPerformance()
+    {
+        if (CorrectPercentage == 100)
+        {
+            ModalPerformanceText = L["performance_perfect"];
+        }
+        else if (CorrectPercentage >= 70)
+        {
+            ModalPerformanceText = L["performance_good"];
+        }
+        else if (CorrectPercentage >= 40)
+        {
+            ModalPerformanceText = L["performance_medium"];
+        }
+        else
+        {
+            ModalPerformanceText = L["performance_bad"];
+        }
+    }
+
+    private string GetPerformanceColor()
+    {
+        if (ShowAnswerInModal) return "#ff4444";
+        if (CorrectPercentage == 100) return "#00ff00";
+        if (CorrectPercentage >= 70) return "#ffff00";
+        if (CorrectPercentage >= 40) return "#ff8800";
+        return "#ff4444";
+    }
+
+    private string GetRandomPhrase()
+    {
+        string[] words = { "HELLO", "WORLD", "SECRET", "CIPHER", "BLAZOR", "ENCRYPT", "DECODE", "CRYPTO", "SECURE", "CLEVER", "BRAIN", "SMART", "QUICK", "FAST", "COOL", "NICE", "GOOD", "BEST", "CODE", "GAME", "FUN", "TEST", "QUIZ" };
+        int count = Settings.Current == PlayfairGame.Difficulty.Easy ? 1 : (Settings.Current == PlayfairGame.Difficulty.Normal ? 2 : 3);
+        var list = new List<string>();
+        for (int i = 0; i < count; i++) list.Add(words[Random.Shared.Next(words.Length)]);
+        return string.Join(" ", list);
+    }
+
+    private static int Mod26(int x) => ((x % 26) + 26) % 26;
+
+    private static bool TryParseShift(string s, out int value)
+    {
+        value = 0;
+        if (string.IsNullOrWhiteSpace(s)) return false;
+        var orig = s.Trim();
+        bool neg = orig.StartsWith("-");
+        bool pos = orig.StartsWith("+") || char.IsDigit(orig.FirstOrDefault());
+        var digits = (orig.StartsWith("+") || orig.StartsWith("-")) && orig.Length > 1 ? orig.Substring(1) : orig;
+        if (!int.TryParse(digits, out int abs)) return false;
+        value = neg ? -Math.Abs(abs) : Math.Abs(abs);
+        return true;
+    }
+}
+@code {
+    protected override void OnInitialized()
+    {
+        L.OnChange += OnLanguageChanged;
+    }
+
+    public void Dispose()
+    {
+        L.OnChange -= OnLanguageChanged;
+    }
+
+    private void OnLanguageChanged()
+    {
+        UpdateQuestionText();
+        StateHasChanged();
+    }
+
+    private void UpdateQuestionText()
+    {
+        if (!HasStarted) return;
+        if (AskForward)
+        {
+            QuestionText = $"{L["find_shift"]}: {BaseText} {Arrow} {EncodedText}";
+        }
+        else
+        {
+            QuestionText = $"{L["find_shift"]}: {EncodedText} {Arrow} {BaseText}";
+        }
+    }
+}
+

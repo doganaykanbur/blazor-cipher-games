@@ -1,0 +1,19 @@
+.page[b-5a2zzp2fyf] {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main[b-5a2zzp2fyf] {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.content[b-5a2zzp2fyf] {
+    width: 100%;
+    max-width: 1200px;
+    padding: 2rem;
+}

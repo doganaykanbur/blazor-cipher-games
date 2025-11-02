@@ -1,0 +1,27 @@
+@inject LanguageService L
+@inject IJSRuntime JS
+
+<div class="lang-switch">
+    <button class="lang-btn @(L.Current=="tr" ? "active" : null)" @onclick='@(() => Change("tr"))'>TR</button>
+    <button class="lang-btn @(L.Current=="en" ? "active" : null)" @onclick='@(() => Change("en"))'>EN</button>
+  </div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var saved = await JS.InvokeAsync<string>("localStorage.getItem", "lang");
+            if (!string.IsNullOrWhiteSpace(saved))
+                L.SetLanguage(saved);
+        }
+        catch { }
+    }
+
+    private async Task Change(string lang)
+    {
+        L.SetLanguage(lang);
+        try { await JS.InvokeVoidAsync("localStorage.setItem", "lang", lang); } catch { }
+        StateHasChanged();
+    }
+}

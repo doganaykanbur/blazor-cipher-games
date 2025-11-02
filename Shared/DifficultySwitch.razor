@@ -1,0 +1,38 @@
+@using PlayfairGame
+@inject SettingsService Settings
+@inject LanguageService L
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="diff-switch">
+    <button class="lang-btn @(Settings.Current==Difficulty.Easy ? "active" : null)" @onclick='@(() => Change(Difficulty.Easy))'>@L["difficulty_easy"]</button>
+    <button class="lang-btn @(Settings.Current==Difficulty.Normal ? "active" : null)" @onclick='@(() => Change(Difficulty.Normal))'>@L["difficulty_normal"]</button>
+    <button class="lang-btn @(Settings.Current==Difficulty.Hard ? "active" : null)" @onclick='@(() => Change(Difficulty.Hard))'>@L["difficulty_hard"]</button>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            L.OnChange += OnLangChanged;
+            var saved = await JS.InvokeAsync<string>("localStorage.getItem", "difficulty");
+            if (!string.IsNullOrWhiteSpace(saved) && Enum.TryParse<Difficulty>(saved, out var d))
+                Settings.SetDifficulty(d);
+        }
+        catch { }
+    }
+    private void OnLangChanged() => InvokeAsync(StateHasChanged);
+
+    private async Task Change(Difficulty d)
+    {
+        Settings.SetDifficulty(d);
+        try { await JS.InvokeVoidAsync("localStorage.setItem", "difficulty", d.ToString()); } catch { }
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        L.OnChange -= OnLangChanged;
+    }
+}

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#00ffff" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#1e90ff" stop-opacity="0.25"/>
+    </linearGradient>
+  </defs>
+  <rect x="12" y="12" width="176" height="176" rx="16" fill="#0a1a2a" stroke="#00bfff" stroke-width="2"/>
+  <rect x="24" y="24" width="152" height="152" rx="12" fill="url(#g)" stroke="#11324a"/>
+  <g fill="#ffd700" font-family="Segoe UI, Arial, sans-serif" font-size="12" text-anchor="middle">
+    <text x="100" y="46">VIGENERE</text>
+  </g>
+  <!-- rows of letters to hint tabula recta -->
+  <g fill="#9ddcff" font-size="9" font-family="Consolas, monospace">
+    <text x="36" y="78">ABCDEFGHIJKLMNOPQRSTUVWXYZ</text>
+    <text x="36" y="94">BCDEFGHIJKLMNOPQRSTUVWXYZA</text>
+    <text x="36" y="110">CDEFGHIJKLMNOPQRSTUVWXYZAB</text>
+    <text x="36" y="126">DEFGHIJKLMNOPQRSTUVWXYZABC</text>
+  </g>
+</svg>
+

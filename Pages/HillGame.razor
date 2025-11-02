@@ -1,0 +1,312 @@
+@page "/hill"
+@using System.Text
+@inject IJSRuntime JSRuntime
+@inject LanguageService L
+@inject SettingsService Settings
+@implements IDisposable
+
+<div class="game-wrapper">    <div class="game-nav">
+        <a class="game-btn" href="/">@L["menu_playfair"]</a>
+        <a class="game-btn" href="/caesar">@L["menu_caesar"]</a>
+        <a class="game-btn active" href="/hill">@L["menu_hill"]</a>
+        <a class="game-btn" href="/vigenere">@L["menu_vigenere"]</a>
+        <a class="game-btn" href="/transposition">@L["menu_transposition"]</a>
+    </div>
+
+    @if (!HasStarted)
+    {
+        <div class="start-screen">
+            <img src="images/hill.svg" alt="Hill" class="game-logo" />
+            <h1 class="game-title">@L["hill_title"]</h1>
+            <div class="tagline">@L["hill_tagline"]</div>
+            <p class="intro-text">@L["hill_intro"]</p>
+            <button class="start-button" @onclick="StartGame">@L["start"]</button>
+            <div class="start-cta">@L["hill_start_cta"]</div>
+        </div>
+    }
+    else
+    {
+        <div class="game-container">
+            <div class="info-box">
+                <div class="mode-badge">@(IsEncode ? L["encode_mode"] : L["decode_mode"])</div>
+                <div class="keyword-box">Key Matrix (mod 26)</div>
+            </div>
+
+            <div class="matrix2x2">
+                <div class="cell">@Key[0,0]</div>
+                <div class="cell">@Key[0,1]</div>
+                <div class="cell">@Key[1,0]</div>
+                <div class="cell">@Key[1,1]</div>
+            </div>
+
+            <div class="question-box">@QuestionText</div>
+
+            <div class="answer-container">
+                <input class="answer-input" placeholder="@L["your_answer_placeholder"]" @bind="UserAnswer" />
+                @if (CharacterValidation.Count > 0)
+                {
+                    <div class="character-validation">
+                        @for (int i = 0; i < CharacterValidation.Count; i++)
+                        {
+                            <span class="char @(CharacterValidation[i] ? "correct-char" : "wrong-char")">
+                                @(i < UserAnswer.Length ? UserAnswer[i].ToString().ToUpper() : "")
+                            </span>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="button-group">
+                <button class="action-button" @onclick="CheckAnswer">@L["check"]</button>
+                <button class="action-button" @onclick="ShowAnswer">@L["show_answer"]</button>
+            </div>
+
+            @if (ResultMessage is not null && !ShowModal)
+            {
+                <div class="@($"result {(IsCorrect ? "correct" : "wrong")}")">@ResultMessage</div>
+            }
+
+            @if (ShowModal)
+            {
+                <div class="modal-overlay" @onclick="CloseModal">
+                    <div class="modal-content" @onclick:stopPropagation="true">
+                        <div class="modal-header">
+                            <h2 class="modal-title">@L["result_title"]</h2>
+                            <button class="modal-close" @onclick="CloseModal">&times;</button>
+                        </div>
+
+                        <div class="modal-body">
+                            <div class="performance-info">
+                                <div class="performance-text" style="color: @GetPerformanceColor()">
+                                    @ModalPerformanceText
+                                </div>
+                                <div class="performance-details">
+                                    <div class="detail-item">
+                                        <span class="detail-label">@L["error_count"]</span>
+                                        <span class="detail-value">@ErrorCount</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">@L["total_attempts"]</span>
+                                        <span class="detail-value">@TotalAttempts</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (ShowPercentage)
+                            {
+                                <div class="percentage-display">
+                                    <div class="percentage-label" id="percentageText" style="color: @GetPerformanceColor()">0%</div>
+                                </div>
+                            }
+
+                            @if (ShowAnswerInModal)
+                            {
+                                <div class="correct-answer-box">@L["correct_answer"] @CorrectAnswer</div>
+                            }
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="modal-button" @onclick="NextQuestionFromModal">@L["continue"]</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private bool HasStarted = false;
+    private HillCipher? cipher;
+    private int[,] Key = new int[2,2];
+    private string QuestionText = string.Empty;
+    private string BaseWord = string.Empty;
+    private string EncodedWord = string.Empty;
+    private string UserAnswer = string.Empty;
+    private string CorrectAnswer = string.Empty;
+    private string? ResultMessage;
+    private bool IsCorrect;
+    private bool IsEncode;
+    private List<bool> CharacterValidation = new();
+    private int CorrectPercentage = 0;
+    private bool ShowPercentage = false;
+    private int ErrorCount = 0;
+    private bool ShowModal = false;
+    private int TotalAttempts = 0;
+
+    // Modal
+    // Title is provided from language service in markup
+    private string ModalPerformanceText = string.Empty;
+    private bool ShowAnswerInModal = false;
+
+    private void StartGame()
+    {
+        HasStarted = true;
+        NextQuestion();
+    }
+
+    private void NextQuestion()
+    {
+        ResultMessage = null;
+        UserAnswer = string.Empty;
+        CharacterValidation.Clear();
+        ShowPercentage = false;
+        CorrectPercentage = 0;
+        ShowModal = false;
+        ShowAnswerInModal = false;
+
+        // Generate invertible 2x2 matrix modulo 26
+        (int a, int b, int c, int d) = GenerateRandomInvertibleMatrix();
+        Key[0,0] = a; Key[0,1] = b; Key[1,0] = c; Key[1,1] = d;
+        cipher = new HillCipher(a, b, c, d);
+
+        IsEncode = Random.Shared.Next(2) == 0;
+        BaseWord = GetRandomPhrase();
+        EncodedWord = cipher.Encode(BaseWord);
+
+        if (IsEncode)
+        {
+            QuestionText = $"{L["encode_word"]} {BaseWord}";
+            CorrectAnswer = EncodedWord;
+        }
+        else
+        {
+            QuestionText = $"{L["decode_word"]} {EncodedWord}";
+            CorrectAnswer = cipher.Decode(EncodedWord);
+        }
+    }
+
+    private (int,int,int,int) GenerateRandomInvertibleMatrix()
+    {
+        while (true)
+        {
+            int a = Random.Shared.Next(0, 26);
+            int b = Random.Shared.Next(0, 26);
+            int c = Random.Shared.Next(0, 26);
+            int d = Random.Shared.Next(0, 26);
+            if (HillCipher.IsInvertible(a,b,c,d)) return (a,b,c,d);
+        }
+    }
+
+    private string GetRandomPhrase()
+    {
+        string[] words = { "SECRET", "CIPHER", "BLAZOR", "ENCRYPT", "DECODE", "CRYPTO", "SECURE", "CLEVER", "BRAIN", "SMART", "QUICK", "FAST", "NICE", "GOOD", "BEST", "CODE", "GAME", "FUN", "TEST", "QUIZ" };
+        int count = Settings.Current == PlayfairGame.Difficulty.Easy ? 1 : (Settings.Current == PlayfairGame.Difficulty.Normal ? 2 : 3);
+        var list = new List<string>();
+        for (int i = 0; i < count; i++) list.Add(words[Random.Shared.Next(words.Length)]);
+        return string.Join(" ", list);
+    }
+
+    private void CheckAnswer()
+    {
+        CharacterValidation.Clear();
+        TotalAttempts++;
+
+        var userAnswerUpper = new string(UserAnswer.ToUpper().Where(ch => ch != ' ').ToArray());
+        var correctAnswerUpper = CorrectAnswer.ToUpper();
+
+        int maxLength = Math.Max(userAnswerUpper.Length, correctAnswerUpper.Length);
+        int correctCount = 0;
+
+        for (int i = 0; i < maxLength; i++)
+        {
+            bool isCorrect = i < userAnswerUpper.Length &&
+                             i < correctAnswerUpper.Length &&
+                             userAnswerUpper[i] == correctAnswerUpper[i];
+            CharacterValidation.Add(isCorrect);
+            if (isCorrect) correctCount++;
+        }
+
+        CorrectPercentage = maxLength > 0 ? (correctCount * 100) / maxLength : 0;
+        IsCorrect = string.Equals(userAnswerUpper, correctAnswerUpper, StringComparison.OrdinalIgnoreCase);
+
+        if (IsCorrect)
+        {
+            ShowAnswerInModal = false;
+            ShowModal = true;
+            ShowPercentage = true;
+            SetModalPerformance();
+            StateHasChanged();
+            JSRuntime.InvokeVoidAsync("animatePercentage", CorrectPercentage);
+        }
+        else
+        {
+            ErrorCount++;
+            ResultMessage = L["wrong_try_again"];
+        }
+    }
+
+    private void ShowAnswer()
+    {
+        ShowModal = true;
+        ShowPercentage = true;
+        ShowAnswerInModal = true;
+        CorrectPercentage = 0;
+        ModalPerformanceText = L["didnt_guess"];
+        StateHasChanged();
+        JSRuntime.InvokeVoidAsync("animatePercentage", CorrectPercentage);
+    }
+
+    private void NextQuestionFromModal()
+    {
+        NextQuestion();
+    }
+
+    private void CloseModal()
+    {
+        ShowModal = false;
+        ShowPercentage = false;
+        ShowAnswerInModal = false;
+    }
+
+    private void SetModalPerformance()
+    {
+        if (CorrectPercentage == 100)
+        {
+            ModalPerformanceText = L["performance_perfect"];
+        }
+        else if (CorrectPercentage >= 70)
+        {
+            ModalPerformanceText = L["performance_good"];
+        }
+        else if (CorrectPercentage >= 40)
+        {
+            ModalPerformanceText = L["performance_medium"];
+        }
+        else
+        {
+            ModalPerformanceText = L["performance_bad"];
+        }
+    }
+
+    private string GetPerformanceColor()
+    {
+        if (ShowAnswerInModal) return "#ff4444";
+        if (CorrectPercentage == 100) return "#00ff00";
+        if (CorrectPercentage >= 70) return "#ffff00";
+        if (CorrectPercentage >= 40) return "#ff8800";
+        return "#ff4444";
+    }
+}
+@code {
+    protected override void OnInitialized()
+    {
+        L.OnChange += OnLanguageChanged;
+    }
+
+    public void Dispose()
+    {
+        L.OnChange -= OnLanguageChanged;
+    }
+
+    private void OnLanguageChanged()
+    {
+        if (!HasStarted) { StateHasChanged(); return; }
+        if (IsEncode)
+            QuestionText = $"{L["encode_word"]} {BaseWord}";
+        else
+            QuestionText = $"{L["decode_word"]} {EncodedWord}";
+        StateHasChanged();
+    }
+}
+
