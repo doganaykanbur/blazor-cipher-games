@@ -1,0 +1,24 @@
+# Build artifacts
+bin/
+obj/
+
+# IDE caches/settings
+.vs/
+.vscode/
+*.user
+*.suo
+*.userprefs
+
+# OS / misc
+*.log
+*.tmp
+*.cache
+*.DS_Store
+Thumbs.db
+
+# Generated web output (if any custom bundling used)
+wwwroot/dist/
+
+# Node (if later added for tooling)
+node_modules/
+
