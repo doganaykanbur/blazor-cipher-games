@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#00bfff"/>
+      <stop offset="100%" stop-color="#1e90ff"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="112" height="112" rx="12" ry="12" fill="#0f2033" stroke="#2aa7ff" stroke-width="2"/>
+  <g font-family="Segoe UI,Arial" font-size="12" fill="#bfeaff">
+    <text x="18" y="40">A→Q</text>
+    <text x="18" y="60">B→W</text>
+    <text x="18" y="80">C→E</text>
+    <text x="62" y="40">D→R</text>
+    <text x="62" y="60">E→T</text>
+    <text x="62" y="80">F→Y</text>
+  </g>
+  <text x="60" y="18" text-anchor="middle" font-family="Segoe UI,Arial" font-size="12" fill="#bfeaff">Monoalphabetic</text>
+</svg>

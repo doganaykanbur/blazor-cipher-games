@@ -1,27 +1,28 @@
-@page "/"
-@using System.Text
+@page "/monoalphabetic"
 @inject IJSRuntime JSRuntime
 @inject LanguageService L
 @inject SettingsService Settings
 @implements IDisposable
 
-<div class="game-wrapper">    <div class="game-nav">
-        <a class="game-btn active" href="/">@L["menu_playfair"]</a>
+<div class="game-wrapper">
+    <div class="game-nav">
+        <a class="game-btn" href="/">@L["menu_playfair"]</a>
         <a class="game-btn" href="/caesar">@L["menu_caesar"]</a>
         <a class="game-btn" href="/hill">@L["menu_hill"]</a>
         <a class="game-btn" href="/vigenere">@L["menu_vigenere"]</a>
         <a class="game-btn" href="/transposition">@L["menu_transposition"]</a>
-        <a class="game-btn" href="/monoalphabetic">@L["menu_monoalphabetic"]</a>
+        <a class="game-btn active" href="/monoalphabetic">@L["menu_monoalphabetic"]</a>
     </div>
+
     @if (!HasStarted)
     {
         <div class="start-screen">
-            <img src="images/playfair.svg" alt="Playfair" class="game-logo" />
-            <h1 class="game-title">@L["playfair_title"]</h1>
-            <div class="tagline">@L["playfair_tagline"]</div>
-            <p class="intro-text">@L["playfair_intro"]</p>
+            <img src="images/monoalphabetic.svg" alt="Monoalphabetic" class="game-logo" />
+            <h1 class="game-title">@L["mono_title"]</h1>
+            <div class="tagline">@L["mono_tagline"]</div>
+            <p class="intro-text">@L["mono_intro"]</p>
             <button class="start-button" @onclick="StartGame">@L["start"]</button>
-            <div class="start-cta">@L["playfair_start_cta"]</div>
+            <div class="start-cta">@L["mono_start_cta"]</div>
         </div>
     }
     else
@@ -29,21 +30,12 @@
         <div class="game-container">
             <div class="info-box">
                 <div class="mode-badge">@(IsEncode ? L["encode_mode"] : L["decode_mode"])</div>
-                <div class="keyword-box">@L["keyword_label"] <span class="keyword">@Keyword</span></div>
-            </div>
-
-            <div class="matrix" key="@MatrixKey">
-                @for (int i = 0; i < MatrixLetters.Count; i++)
-                {
-                    var ch = MatrixLetters[i];
-                    var isKeyword = Keyword.Contains(ch);
-                    var delay = i * 0.08;
-                    <div class="cell @(isKeyword ? "keyword-cell" : "")" style="animation-delay:@(delay)s">@ch</div>
-                }
+                <div class="keyword-box">@L["plain_alphabet"] <span class="keyword">ABCDEFGHIJKLMNOPQRSTUVWXYZ</span></div>
+                <div class="keyword-box">@L["mixed_alphabet"] <span class="keyword">@MixedAlphabet</span></div>
             </div>
 
             <div class="question-box">@QuestionText</div>
-            
+
             <div class="answer-container">
                 <input class="answer-input" placeholder="@L["your_answer_placeholder"]" @bind="UserAnswer" />
                 @if (CharacterValidation.Count > 0)
@@ -77,7 +69,7 @@
                             <h2 class="modal-title">@L["result_title"]</h2>
                             <button class="modal-close" @onclick="CloseModal">&times;</button>
                         </div>
-                        
+
                         <div class="modal-body">
                             <div class="performance-info">
                                 <div class="performance-text" style="color: @GetPerformanceColor()">
@@ -94,7 +86,7 @@
                                     </div>
                                 </div>
                             </div>
-                            
+
                             @if (ShowPercentage)
                             {
                                 <div class="percentage-display">
@@ -107,7 +99,7 @@
                                 <div class="correct-answer-box">@L["correct_answer"] @CorrectAnswer</div>
                             }
                         </div>
-                        
+
                         <div class="modal-footer">
                             <button class="modal-button" @onclick="NextQuestionFromModal">@L["continue"]</button>
                         </div>
@@ -120,27 +112,25 @@
 
 @code {
     private bool HasStarted = false;
-    private PlayfairCipher? cipher;
+    private MonoalphabeticCipher? cipher;
     private string Keyword = string.Empty;
     private string QuestionText = string.Empty;
     private string BaseText = string.Empty;
-    private string EncodedWord = string.Empty;
+    private string EncodedText = string.Empty;
     private string UserAnswer = string.Empty;
     private string CorrectAnswer = string.Empty;
+    private string MixedAlphabet = string.Empty;
     private string? ResultMessage;
     private bool IsCorrect;
     private bool IsEncode;
-    private List<char> MatrixLetters = new();
-    private List<bool> CharacterValidation = new(); 
+    private List<bool> CharacterValidation = new();
     private int CorrectPercentage = 0;
     private bool ShowPercentage = false;
-    private int MatrixKey = 0;
-    private int ErrorCount = 0;
     private bool ShowModal = false;
+    private int ErrorCount = 0;
     private int TotalAttempts = 0;
 
-    // Modal kontrol değişkenleri
-    // Title comes from language service in markup
+    // Modal
     private string ModalPerformanceText = string.Empty;
     private bool ShowAnswerInModal = false;
 
@@ -160,24 +150,24 @@
         ShowModal = false;
         ShowAnswerInModal = false;
 
-        MatrixKey++;
-        Keyword = GenerateRandomKeyword();
-        cipher = new PlayfairCipher(Keyword);
-        GenerateMatrix();
+        // Always use a fully random mixed alphabet (no keyword)
+        Keyword = string.Empty;
+        cipher = new MonoalphabeticCipher(null);
+        MixedAlphabet = cipher.MixedAlphabet;
 
         IsEncode = Random.Shared.Next(2) == 0;
         BaseText = GetRandomPhrase();
-        EncodedWord = cipher.Encode(BaseText);
+        EncodedText = cipher.Encode(BaseText);
 
         if (IsEncode)
         {
             QuestionText = $"{L["encode_word"]} {BaseText}";
-            CorrectAnswer = EncodedWord;
+            CorrectAnswer = EncodedText;
         }
         else
         {
-            QuestionText = $"{L["decode_word"]} {EncodedWord}";
-            CorrectAnswer = cipher.Decode(EncodedWord);
+            QuestionText = $"{L["decode_word"]} {EncodedText}";
+            CorrectAnswer = cipher.Decode(EncodedText);
         }
     }
 
@@ -186,27 +176,23 @@
         CharacterValidation.Clear();
         TotalAttempts++;
 
-        var userAnswerUpper = new string(UserAnswer.ToUpper().Where(ch => ch != ' ').ToArray());
-        var correctAnswerUpper = CorrectAnswer.ToUpper();
+        var user = new string(UserAnswer.ToUpper().Where(ch => ch != ' ').ToArray());
+        var correct = CorrectAnswer.ToUpper();
 
-        int maxLength = Math.Max(userAnswerUpper.Length, correctAnswerUpper.Length);
+        int maxLength = Math.Max(user.Length, correct.Length);
         int correctCount = 0;
-
         for (int i = 0; i < maxLength; i++)
         {
-            bool isCorrect = i < userAnswerUpper.Length &&
-                             i < correctAnswerUpper.Length &&
-                             userAnswerUpper[i] == correctAnswerUpper[i];
-            CharacterValidation.Add(isCorrect);
-            if (isCorrect) correctCount++;
+            bool ok = i < user.Length && i < correct.Length && user[i] == correct[i];
+            CharacterValidation.Add(ok);
+            if (ok) correctCount++;
         }
 
         CorrectPercentage = maxLength > 0 ? (correctCount * 100) / maxLength : 0;
-        IsCorrect = string.Equals(userAnswerUpper, correctAnswerUpper, StringComparison.OrdinalIgnoreCase);
+        IsCorrect = string.Equals(user, correct, StringComparison.OrdinalIgnoreCase);
 
         if (IsCorrect)
         {
-            // Kullanıcı doğru cevabı buldu
             ShowAnswerInModal = false;
             ShowModal = true;
             ShowPercentage = true;
@@ -266,34 +252,26 @@
 
     private string GetPerformanceColor()
     {
-        if (ShowAnswerInModal) return "#ff4444"; // Show Answer kırmızı
-        if (CorrectPercentage == 100) return "#00ff00"; // Yeşil
-        if (CorrectPercentage >= 70) return "#ffff00"; // Sarı
-        if (CorrectPercentage >= 40) return "#ff8800"; // Turuncu
-        return "#ff4444"; // Kırmızı
+        if (ShowAnswerInModal) return "#ff4444";
+        if (CorrectPercentage == 100) return "#00ff00";
+        if (CorrectPercentage >= 70) return "#ffff00";
+        if (CorrectPercentage >= 40) return "#ff8800";
+        return "#ff4444";
     }
 
     private string GenerateRandomKeyword()
     {
-        string[] meaningfulWords = { "HELLO", "WORLD", "SECRET", "CIPHER", "PLAYFAIR", "BLAZOR", "ENCRYPT", "DECODE", "MATRIX", "CRYPTO", "SECURE", "CLEVER", "BRAIN", "SMART", "QUICK", "FAST", "COOL", "NICE", "GOOD", "BEST" };
-        return meaningfulWords[Random.Shared.Next(meaningfulWords.Length)];
+        string[] words = { "SECRET", "CIPHER", "KEYWORD", "ALPHA", "OMEGA", "BLAZOR", "ENIGMA", "NOVA", "CRYPTO", "VECTOR" };
+        return words[Random.Shared.Next(words.Length)];
     }
 
     private string GetRandomPhrase()
     {
-        string[] words = { "HELLO", "WORLD", "SECRET", "CIPHER", "PLAYFAIR", "BLAZOR", "ENCRYPT", "DECODE", "MATRIX", "CRYPTO", "SECURE", "CLEVER", "BRAIN", "SMART", "QUICK", "FAST", "COOL", "NICE", "GOOD", "BEST", "CODE", "GAME", "FUN", "TEST", "QUIZ" };
+        string[] words = { "HELLO", "WORLD", "SECRET", "CIPHER", "ENCRYPT", "DECODE", "CRYPTO", "SECURE", "CLEVER", "BRAIN", "SMART", "QUICK", "COOL", "NICE", "CODE", "GAME", "TEST", "QUIZ" };
         int count = Settings.Current == PlayfairGame.Difficulty.Easy ? 1 : (Settings.Current == PlayfairGame.Difficulty.Normal ? 2 : 3);
         var list = new List<string>();
         for (int i = 0; i < count; i++) list.Add(words[Random.Shared.Next(words.Length)]);
         return string.Join(" ", list);
-    }
-
-    private void GenerateMatrix()
-    {
-        string preparedKey = new string(Keyword.ToUpper().Where(char.IsLetter).Distinct().ToArray());
-        string letters = "ABCDEFGHIKLMNOPQRSTUVWXYZ";
-        string fullKey = new string(preparedKey.Concat(letters).Distinct().ToArray());
-        MatrixLetters = fullKey.Take(25).ToList();
     }
 }
 @code {
@@ -302,28 +280,18 @@
         L.OnChange += OnLanguageChanged;
     }
 
-    private void OnLanguageChanged()
-    {
-        if (!HasStarted)
-        {
-            StateHasChanged();
-            return;
-        }
-        if (IsEncode)
-            QuestionText = $"{L["encode_word"]} {BaseText}";
-        else
-            QuestionText = $"{L["decode_word"]} {EncodedWord}";
-        StateHasChanged();
-    }
-
     public void Dispose()
     {
         L.OnChange -= OnLanguageChanged;
     }
+
+    private void OnLanguageChanged()
+    {
+        if (!HasStarted) { StateHasChanged(); return; }
+        if (IsEncode)
+            QuestionText = $"{L["encode_word"]} {BaseText}";
+        else
+            QuestionText = $"{L["decode_word"]} {EncodedText}";
+        StateHasChanged();
+    }
 }
-
-
-
-
-
-

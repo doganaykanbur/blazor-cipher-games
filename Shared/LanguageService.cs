@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace PlayfairGame
@@ -17,6 +17,7 @@ namespace PlayfairGame
             ["menu_hill"] = "Hill",
             ["menu_vigenere"] = "Vigenere",
             ["menu_transposition"] = "Transpozisyon",
+            ["menu_monoalphabetic"] = "Monoalfabetik",
 
             ["difficulty_easy"] = "Kolay",
             ["difficulty_normal"] = "Normal",
@@ -73,9 +74,13 @@ namespace PlayfairGame
             ["transposition_start_cta"] = "Başlamak için Başlat'a tıklayın!",
             ["transposition_title"] = "Transposition Cipher",
 
-            ["tabula_recta"] = "",
-            ["show_table"] = "Tabloyu Göster",
-            ["hide_table"] = "Tabloyu Gizle",
+            ["plain_alphabet"] = "Düz Alfabe",
+            ["mixed_alphabet"] = "Karışık Alfabe",
+
+            ["mono_tagline"] = "Karıştırılmış alfabe ile yerine koyma.",
+            ["mono_intro"] = "Anahtar kelime ile üretilen karışık alfabeyi kullanarak metni şifreleyin ya da çözün.",
+            ["mono_start_cta"] = "Başlamak için Başlat'a tıklayın!",
+            ["mono_title"] = "Monoalphabetic Cipher",
         };
 
         private readonly Dictionary<string, string> en = new()
@@ -87,6 +92,7 @@ namespace PlayfairGame
             ["menu_hill"] = "Hill",
             ["menu_vigenere"] = "Vigenere",
             ["menu_transposition"] = "Transposition",
+            ["menu_monoalphabetic"] = "Monoalphabetic",
 
             ["difficulty_easy"] = "Easy",
             ["difficulty_normal"] = "Normal",
@@ -143,9 +149,13 @@ namespace PlayfairGame
             ["transposition_start_cta"] = "Click Start to begin!",
             ["transposition_title"] = "Transposition Cipher",
 
-            ["tabula_recta"] = "",
-            ["show_table"] = "Show Table",
-            ["hide_table"] = "Hide Table",
+            ["plain_alphabet"] = "Plain Alphabet",
+            ["mixed_alphabet"] = "Mixed Alphabet",
+
+            ["mono_tagline"] = "Simple substitution with a mixed alphabet.",
+            ["mono_intro"] = "Use a keyword-derived permutation of the alphabet to encode or decode the text.",
+            ["mono_start_cta"] = "Click Start to begin!",
+            ["mono_title"] = "Monoalphabetic Cipher",
         };
 
         public void SetLanguage(string lang)
@@ -165,4 +175,3 @@ namespace PlayfairGame
         }
     }
 }
-

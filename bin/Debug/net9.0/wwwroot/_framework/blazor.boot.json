@@ -1,7 +1,7 @@
 {
   "mainAssemblyName": "PlayfairGame",
   "resources": {
-    "hash": "sha256-z8cjAJ8eM2fy9Ee9XJ4Q2a26TLx3dmkrhPLBjq4MglM=",
+    "hash": "sha256-kf1hfYKN3smhOTrjQ69IgNwajKy2QLNjWg0tMwfaXPo=",
     "fingerprinting": {
       "Microsoft.AspNetCore.Authorization.bvu82j4ad3.wasm": "Microsoft.AspNetCore.Authorization.wasm",
       "Microsoft.AspNetCore.Components.ptfrz3fits.wasm": "Microsoft.AspNetCore.Components.wasm",
@@ -201,8 +201,8 @@
       "icudt_CJK.tjcz0u77k5.dat": "icudt_CJK.dat",
       "icudt_EFIGS.tptq2av103.dat": "icudt_EFIGS.dat",
       "icudt_no_CJK.lfu7j35m59.dat": "icudt_no_CJK.dat",
-      "PlayfairGame.pngoit5azz.wasm": "PlayfairGame.wasm",
-      "PlayfairGame.a1p0j0bjc1.pdb": "PlayfairGame.pdb"
+      "PlayfairGame.6cf4ryko9m.wasm": "PlayfairGame.wasm",
+      "PlayfairGame.a105gynhmr.pdb": "PlayfairGame.pdb"
     },
     "jsModuleNative": {
       "dotnet.native.st0ovrfdhi.js": "sha256-MBW/zayfv+YU6mhH7y4b8NNU4D1EYd7nf9gYrFshnnY="
@@ -412,10 +412,10 @@
       "WindowsBase.pg3o6xzigg.wasm": "sha256-dz62CHynC+zqTkbMOf3vm7YAhiRA8/pIoAwuqHfBL5M=",
       "mscorlib.jl2pswegra.wasm": "sha256-mSoCIDTdCQKTipW8VmFCypW/4AopZauaYRa8LoZdHvY=",
       "netstandard.uriri6ambh.wasm": "sha256-yuH/cvPd6r8N9nfPWihyckFD7hPFP+VQtQQxEqi7HIQ=",
-      "PlayfairGame.pngoit5azz.wasm": "sha256-VSA8DlPo879FEAtz0FsGGLpqxWdfF5E6eOgI9mrSnY0="
+      "PlayfairGame.6cf4ryko9m.wasm": "sha256-pik10Cf1hMpv51osZtayVJMbe9mUwZtXT4Z2b8TmLoA="
     },
     "pdb": {
-      "PlayfairGame.a1p0j0bjc1.pdb": "sha256-vuFrGR5Ynm8n0yqAJ+QTPBwbrvUD7BboBqTAeuinhTk="
+      "PlayfairGame.a105gynhmr.pdb": "sha256-kuhp+DvRvZeJKVibcFeMex3Z1SyJW7cHG6RQ9RPuEig="
     }
   },
   "cacheBootResources": true,
